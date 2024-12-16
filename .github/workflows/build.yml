@@ -12,14 +12,17 @@ jobs:
   build:
     runs-on: ubuntu-24.04
 
+    container:
+      image: nvcr.io/nvidia/tensorrt:23.04-py3
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          apt-get update
+          apt-get install -y --no-install-recommends \
             build-essential \
             cmake \
             python3 \
@@ -31,13 +34,6 @@ jobs:
             libssl-dev
           python3 -m pip install --upgrade pip
           python3 -m pip install numpy
-
-      - name: Install CUDA, cuDNN, and TensorRT
-        run: |
-          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.0-1_all.deb
-          sudo dpkg -i cuda-keyring_1.0-1_all.deb
-          sudo apt-get update
-          sudo apt-get install -y cuda-12-6 libnvinfer10 libnvinfer-dev
 
       - name: Clone ONNX Runtime
         run: |
@@ -62,8 +58,3 @@ jobs:
         with:
           name: onnxruntime-${{ github.event.inputs.version }}-linux-x64-cuda12
           path: onnxruntime/build/Linux/Release/onnxruntime-${{ github.event.inputs.version }}-linux-x64-cuda12.tgz
-
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
