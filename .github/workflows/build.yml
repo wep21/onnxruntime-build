@@ -46,7 +46,7 @@ jobs:
           cd onnxruntime
           ./build.sh --config Release --use_cuda --cuda_home=/usr/local/cuda \
             --cudnn_home=/usr/lib/x86_64-linux-gnu --use_tensorrt --tensorrt_home=/usr \
-            --parallel $(nproc) --build_shared_lib --enable_pybind --build_wheel
+            --parallel $(nproc) --build_shared_lib --enable_pybind --build_wheel --allow_running_as_root
 
       - name: Archive build artifacts
         run: |
