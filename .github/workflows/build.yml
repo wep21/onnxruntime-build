@@ -34,10 +34,10 @@ jobs:
 
       - name: Install CUDA, cuDNN, and TensorRT
         run: |
-          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
+          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.0-1_all.deb
           sudo dpkg -i cuda-keyring_1.0-1_all.deb
           sudo apt-get update
-          sudo apt-get install -y cuda-12-6 libcudnn8 libcudnn8-dev libnvinfer10 libnvinfer-dev
+          sudo apt-get install -y cuda-12-6 libnvinfer10 libnvinfer-dev
 
       - name: Clone ONNX Runtime
         run: |
@@ -50,7 +50,7 @@ jobs:
           cd onnxruntime
           ./build.sh --config Release --use_cuda --cuda_home=/usr/local/cuda \
             --cudnn_home=/usr/lib/x86_64-linux-gnu --use_tensorrt --tensorrt_home=/usr \
-            --parallel --build_shared_lib
+            --parallel $(nproc) --build_shared_lib --enable_pybind --build_wheel
 
       - name: Archive build artifacts
         run: |
@@ -62,6 +62,7 @@ jobs:
         with:
           name: onnxruntime-${{ github.event.inputs.version }}-linux-x64-cuda12
           path: onnxruntime/build/Linux/Release/onnxruntime-${{ github.event.inputs.version }}-linux-x64-cuda12.tgz
+
       - name: Run a multi-line script
         run: |
           echo Add other actions to build,
