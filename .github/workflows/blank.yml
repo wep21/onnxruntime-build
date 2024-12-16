@@ -1,0 +1,68 @@
+name: Build ONNX Runtime
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'ONNX Runtime version to build'
+        required: true
+        default: '1.15.1'
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            cmake \
+            python3 \
+            python3-pip \
+            git \
+            wget \
+            libprotobuf-dev \
+            protobuf-compiler \
+            libssl-dev
+          python3 -m pip install --upgrade pip
+          python3 -m pip install numpy
+
+      - name: Install CUDA, cuDNN, and TensorRT
+        run: |
+          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
+          sudo dpkg -i cuda-keyring_1.0-1_all.deb
+          sudo apt-get update
+          sudo apt-get install -y cuda-12-6 libcudnn8 libcudnn8-dev libnvinfer10 libnvinfer-dev
+
+      - name: Clone ONNX Runtime
+        run: |
+          git clone --branch v${{ github.event.inputs.version }} https://github.com/microsoft/onnxruntime.git
+          cd onnxruntime
+          git submodule update --init --recursive
+
+      - name: Configure build
+        run: |
+          cd onnxruntime
+          ./build.sh --config Release --use_cuda --cuda_home=/usr/local/cuda \
+            --cudnn_home=/usr/lib/x86_64-linux-gnu --use_tensorrt --tensorrt_home=/usr \
+            --parallel --build_shared_lib
+
+      - name: Archive build artifacts
+        run: |
+          cd onnxruntime/build/Linux/Release
+          tar -czvf onnxruntime-${{ github.event.inputs.version }}-linux-x64-cuda12.tgz .
+        
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: onnxruntime-${{ github.event.inputs.version }}-linux-x64-cuda12
+          path: onnxruntime/build/Linux/Release/onnxruntime-${{ github.event.inputs.version }}-linux-x64-cuda12.tgz
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
