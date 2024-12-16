@@ -33,7 +33,7 @@ jobs:
             protobuf-compiler \
             libssl-dev
           python3 -m pip install --upgrade pip
-          python3 -m pip install numpy
+          python3 -m pip install cmake numpy
 
       - name: Clone ONNX Runtime
         run: |
